@@ -1,0 +1,19 @@
+{
+  "name": "Bot",
+  "version": "1.0.0",
+  "description": "Bot messenger capable d'identifier les palindromes",
+  "main": "index.js",
+  "script": {
+    "start": "nodemon index.js"
+  },
+  "repository": "https://github.com/tboivin42/bot-messenger-palindrome.git",
+  "author": "tboivin",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "config": "^1.30.0",
+    "express": "^4.16.3",
+    "nodemon": "^1.17.4",
+    "request": "^2.86.0"
+  }
+}
