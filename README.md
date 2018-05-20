@@ -1,6 +1,6 @@
 # bot-messenger-palindrome
 
-C'est un bot qui permet de savoir si un mot est un palindrome ou non.
+<h3>C'est un bot qui permet de savoir si un mot est un palindrome ou non.<h3>
 
 ![33021437_10215846333691797_5902907243786928128_n](https://user-images.githubusercontent.com/25218291/40284288-3e4613f8-5c8d-11e8-88cf-dd1a896c0e24.jpg)
 
