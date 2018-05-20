@@ -13,15 +13,15 @@ const URL = 'https://graph.facebook.com/v2.6/me/messages';
 const VALIDATION_TOKEN = 'kayak';
 const ACCESS_TOKEN = 'EAAC1rHGLqDkBACeZAl9fraHgIcPOFBnIVgJtRntt0OtQwq4NpaSyKYlmA3ZCaWFyXjmUHFIH36LSxo4idW5LRSlHrL9aO7aud4T7cTX4zXK84iiT5Cp8om5UiSarZCX9H0OJDJWZCBHFJ6urYQP3ZBC1NnkrtZCD3etac0pqquNAZDZD';
 
-// --------------------------------------------------Configuration d'authentification au WEBHOOK---------------------------------------------------
-
+/* --------------------------------------------------Configuration d'authentification au WEBHOOK-------------------------------------------------- */
 app.get('/webhook/', (req, res) => {
   if (req.query['hub.verify_token'] === VALIDATION_TOKEN){
     return res.send(req.query['hub.challenge'])
   }
   res.send('wrong token')
 })
-// -----------------------------------------------------Gestion des evenements (envoie de message)-------------------------------------------------
+
+/* -----------------------------------------------------Gestion des evenements (envoie de message)------------------------------------------------- */
 app.post('/webhook', (req, res) => {
   if (req.body.object === 'page') {
     req.body.entry.forEach((entry) => {
@@ -35,9 +35,8 @@ app.post('/webhook', (req, res) => {
   }
 });
 
-// ----------------------------------------------------Definition de plusieurs figures de style----------------------------------------------------
-const askQuestions = (str) => {
-  return {
+/* ----------------------------------------------------Definition de plusieurs figures de style---------------------------------------------------- */
+const askQuestions = (str) => ({
     attachment: {
           type: "template",
           payload: {
@@ -60,18 +59,16 @@ const askQuestions = (str) => {
                 }]
           }
       }
-    }
-}
-// --------------------------------------------------Fonction servant a la reconnaissance de palindrome--------------------------------------------
+    })
+
+/* --------------------------------------------------Fonction servant a la reconnaissance de palindrome-------------------------------------------- */
 const isPalindrome = (str) => {
-  if (str.includes('palindrome') && str.includes('?')) // Retourne la definition d'un palindrome
-    return 'Mot ou groupe de mots qui peut se lire indifféremment de gauche à droite ou de droite à gauche en gardant le même sens (ex. la mariée ira mal ; Roma Amor).';
-  
   const lowRegStr = str.toLowerCase().replace(/[\W_]/g, ''); // Convertit une phrase ou un mot en minuscule et supprime les espaces
   const reverseStr = lowRegStr.split('').reverse().join(''); // Separe les caracteres les uns des autres dans un tableau pour ensuite reverse l'ordre de ce meme tableau et joint le tout
   return reverseStr === lowRegStr; // Compare le premier et le nouveau mot
 }
-// ----------------------------------------------------------Analyse le message--------------------------------------------------------------------
+
+/* ----------------------------------------------------------Analyse le message-------------------------------------------------------------------- */
 const sendMessage = (event) => {
   const sender = event.sender;
   const text = event.message.text;
@@ -79,14 +76,18 @@ const sendMessage = (event) => {
 
   console.log('Message recu: ', text);
 
-  if (text.includes('?') && !text.includes('palindrome')) // Renvoie vers les definitions de figure de style
-    data = askQuestions(text);
-  else
+  if (text.includes('?')) {
+    if (text.toLowerCase().includes('palindrome')) // Retourne la definition d'un palindrome
+      data.text = 'Mot ou groupe de mots qui peut se lire indifféremment de gauche à droite ou de droite à gauche en gardant le même sens (ex. la mariée ira mal ; Roma Amor).';
+    else 
+      data = askQuestions(text); // Renvoie vers les definitions de figure de style
+  } else {
     data.text = isPalindrome(text).toString();
+  }
   Request(sender, data);
 }
 
-// -----------------------------------------------------------Envoie le message--------------------------------------------------------------------
+/* -----------------------------------------------------------Envoie le message-------------------------------------------------------------------- */
 const Request = (sender, data) => {
   request({
     url: URL,
