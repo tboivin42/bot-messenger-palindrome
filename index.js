@@ -63,21 +63,23 @@ const askQuestions = (str) => ({
 
 /* --------------------------------------------------Fonction servant a la reconnaissance de palindrome-------------------------------------------- */
 const isPalindrome = (str) => {
-  const lowRegStr = str.toLowerCase().replace(/[\W_]/g, ''); // Convertit une phrase ou un mot en minuscule et supprime les espaces
+  const lowRegStr = str.replace(/[\W_]/g, ''); // Supprime tout les caracteres qui ne sont pas alphabetique, numerique et _
   const reverseStr = lowRegStr.split('').reverse().join(''); // Separe les caracteres les uns des autres dans un tableau pour ensuite reverse l'ordre de ce meme tableau et joint le tout
-  return reverseStr === lowRegStr; // Compare le premier et le nouveau mot
+  if (reverseStr === lowRegStr) // Compare le premier et le nouveau mot
+    return 'Oui';
+  return 'Non';
 }
 
 /* ----------------------------------------------------------Analyse le message-------------------------------------------------------------------- */
 const sendMessage = (event) => {
   const sender = event.sender;
-  const text = event.message.text;
+  const text = event.message.text.toLowerCase();
   let data = {};
 
   console.log('Message recu: ', text);
 
   if (text.includes('?')) {
-    if (text.toLowerCase().includes('palindrome')) // Retourne la definition d'un palindrome
+    if (text.includes('palindrome')) // Retourne la definition d'un palindrome
       data.text = 'Mot ou groupe de mots qui peut se lire indifféremment de gauche à droite ou de droite à gauche en gardant le même sens (ex. la mariée ira mal ; Roma Amor).';
     else 
       data = askQuestions(text); // Renvoie vers les definitions de figure de style
