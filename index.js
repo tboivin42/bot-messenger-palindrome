@@ -9,7 +9,11 @@ const app = express();
 app.set('port', 8080);
 app.use(bodyParser.json());
 
-const VALIDATION_TOKEN = "kayak";
+const URL = 'https://graph.facebook.com/v2.6/me/messages';
+const VALIDATION_TOKEN = 'kayak';
+const ACCESS_TOKEN = 'EAAC1rHGLqDkBACeZAl9fraHgIcPOFBnIVgJtRntt0OtQwq4NpaSyKYlmA3ZCaWFyXjmUHFIH36LSxo4idW5LRSlHrL9aO7aud4T7cTX4zXK84iiT5Cp8om5UiSarZCX9H0OJDJWZCBHFJ6urYQP3ZBC1NnkrtZCD3etac0pqquNAZDZD';
+
+// --------------------------------------------------Configuration d'authentification au WEBHOOK---------------------------------------------------
 
 app.get('/webhook/', (req, res) => {
   if (req.query['hub.verify_token'] === VALIDATION_TOKEN){
@@ -17,7 +21,7 @@ app.get('/webhook/', (req, res) => {
   }
   res.send('wrong token')
 })
-
+// -----------------------------------------------------Gestion des evenements (envoie de message)-------------------------------------------------
 app.post('/webhook', (req, res) => {
   if (req.body.object === 'page') {
     req.body.entry.forEach((entry) => {
@@ -31,25 +35,66 @@ app.post('/webhook', (req, res) => {
   }
 });
 
-const palindrome = (str) => {
-  const lowRegStr = str.toLowerCase().replace(/[\W_]/g, '');
-  const reverseStr = lowRegStr.split('').reverse().join('');
-  return reverseStr === lowRegStr;
+// ----------------------------------------------------Definition de plusieurs figures de style----------------------------------------------------
+const askQuestions = (str) => {
+  return {
+    attachment: {
+          type: "template",
+          payload: {
+            template_type: "generic",
+              elements: [{
+                  title: "Anacyclique",
+                  subtitle: "Phrase que l’on peut lire dans le sens normal de lecture ou dans le sens inverse.",
+                }, {
+                  title: "Ambigramme",
+                  subtitle: "un mot (ou d'un groupe de mots) dont la représentation suscite une double lecture",
+                }, {
+                  title: "Mot d'une lettre",
+                  subtitle: "mot composé d'une seule lettre",
+                }, {
+                    title: "Nombre palindrome",
+                  subtitle: "un nombre symétrique écrit dans une certaine base a",
+                }, {
+                  title: "Carré magique (lettres)",
+                  subtitle: "est une forme de mots croisés disposé en carré",
+                }]
+          }
+      }
+    }
 }
-
+// --------------------------------------------------Fonction servant a la reconnaissance de palindrome--------------------------------------------
+const isPalindrome = (str) => {
+  if (str.includes('palindrome') && str.includes('?')) // Retourne la definition d'un palindrome
+    return 'Mot ou groupe de mots qui peut se lire indifféremment de gauche à droite ou de droite à gauche en gardant le même sens (ex. la mariée ira mal ; Roma Amor).';
+  
+  const lowRegStr = str.toLowerCase().replace(/[\W_]/g, ''); // Convertit une phrase ou un mot en minuscule et supprime les espaces
+  const reverseStr = lowRegStr.split('').reverse().join(''); // Separe les caracteres les uns des autres dans un tableau pour ensuite reverse l'ordre de ce meme tableau et joint le tout
+  return reverseStr === lowRegStr; // Compare le premier et le nouveau mot
+}
+// ----------------------------------------------------------Analyse le message--------------------------------------------------------------------
 const sendMessage = (event) => {
-  const sender = event.sender.id;
+  const sender = event.sender;
   const text = event.message.text;
+  let data = {};
 
   console.log('Message recu: ', text);
 
+  if (text.includes('?') && !text.includes('palindrome')) // Renvoie vers les definitions de figure de style
+    data = askQuestions(text);
+  else
+    data.text = isPalindrome(text).toString();
+  Request(sender, data);
+}
+
+// -----------------------------------------------------------Envoie le message--------------------------------------------------------------------
+const Request = (sender, data) => {
   request({
-    url: 'https://graph.facebook.com/v2.6/me/messages',
-    qs: {access_token: 'EAAIcxaza46sBAOeO6NsKtsBhWip9UccAqze8sTMOuwoNYdhZBPdR9hHCCNZC9WtcZBBE0KdUEnYhExzxQWHdhxgMFd2yv4TZCe1y45yVrrpJZABGsjiYOtl7wA2vZAglL9iQK92sxZCmzCOlqE4rawBbuaVyZCZBJYyJiuQVfWCnWlwZDZD'},
+    url: URL,
+    qs: {access_token: ACCESS_TOKEN},
     method: 'POST',
     json: {
-      recipient: {id: sender},
-      message: {text: palindrome(text).toString()}
+      recipient: {id: sender.id},
+      message: data
     }
   }, (error, response) => {
     if (error) {
